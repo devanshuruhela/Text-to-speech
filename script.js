@@ -1,6 +1,6 @@
-
-// VoiceRSS Javascript SDK
-const VoiceRSS = {
+const audioElement = document.getElementById('audio');
+"use strict";
+var VoiceRSS = {
   speech: function (e) {
     this._validate(e), this._request(e);
   },
@@ -36,7 +36,10 @@ const VoiceRSS = {
     (t.onreadystatechange = function () {
       if (4 == t.readyState && 200 == t.status) {
         if (0 == t.responseText.indexOf("ERROR")) throw t.responseText;
-        (audioElement.src = t.responseText), audioElement.play();
+        //new Audio(t.responseText).play();
+        audioElement.src = t.responseText;
+        audioElement.play();
+        
       }
     }),
       t.open("POST", "https://api.voicerss.org/", !0),
@@ -55,6 +58,8 @@ const VoiceRSS = {
       (e.src || "") +
       "&hl=" +
       (e.hl || "") +
+      "&v=" +
+      (e.v || "") +
       "&r=" +
       (e.r || "") +
       "&c=" +
@@ -102,3 +107,45 @@ const VoiceRSS = {
     throw "The browser does not support HTTP request";
   },
 };
+
+const voicebtn = document.getElementById("button");
+
+function jokepaser(joke) {
+  VoiceRSS.speech({
+    key: secretkey.apikey,
+    src: joke,
+    hl: "en-us",
+    v: "Linda",
+    r: 0,
+    c: "mp3",
+    f: "44khz_16bit_stereo",
+    ssml: false,
+  });
+}
+
+function togglebutton()
+{
+  voicebtn.disabled = !voicebtn.disabled;
+}
+async function getjokes()
+{
+  let joke = '';
+  const response = await fetch(
+    "https://v2.jokeapi.dev/joke/Programming?blacklistFlags=nsfw,religious,political,racist,sexist,explicit"
+  );
+  const data = await response.json();
+  
+  if(data.setup)
+  {
+    joke=`${data.setup} ... ${data.delivery}`
+  }
+  else{
+    joke = data.joke;
+  }
+
+  jokepaser(joke);
+  togglebutton();
+}
+
+voicebtn.addEventListener("click", getjokes);
+audioElement.addEventListener('ended' , togglebutton)
